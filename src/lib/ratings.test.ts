@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { clampRating, formatStarRating } from './ratings';
+import { clampRating, formatStarRating, getStarFills } from './ratings';
 
 describe('clampRating', () => {
     it('returns the value unchanged when within range', () => {
@@ -47,5 +47,23 @@ describe('formatStarRating', () => {
 
     it('is deterministic for the same input', () => {
         expect(formatStarRating(3.5)).toBe(formatStarRating(3.5));
+    });
+});
+
+describe('getStarFills', () => {
+    it('fills whole stars completely and leaves the rest empty', () => {
+        expect(getStarFills(0)).toEqual([0, 0, 0, 0, 0]);
+        expect(getStarFills(3)).toEqual([100, 100, 100, 0, 0]);
+        expect(getStarFills(5)).toEqual([100, 100, 100, 100, 100]);
+    });
+
+    it('partially fills the star for a fractional rating', () => {
+        expect(getStarFills(3.5)).toEqual([100, 100, 100, 50, 0]);
+        expect(getStarFills(4.2)).toEqual([100, 100, 100, 100, 20]);
+    });
+
+    it('clamps ratings outside the 0–5 range', () => {
+        expect(getStarFills(-1)).toEqual([0, 0, 0, 0, 0]);
+        expect(getStarFills(6)).toEqual([100, 100, 100, 100, 100]);
     });
 });

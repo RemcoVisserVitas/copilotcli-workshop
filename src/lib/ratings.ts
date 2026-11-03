@@ -3,7 +3,7 @@
  *
  * Kept framework-free and side-effect-free so the logic is unit-testable
  * without the Astro runtime (see `ratings.test.ts`). Consumed by the
- * `StarRating.astro` component.
+ * `Stars.astro` and `StarRating.astro` components.
  */
 
 /**
@@ -29,4 +29,18 @@ export function formatStarRating(rating: number | null): string {
     const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
 
     return '★'.repeat(fullStars) + (halfStar ? '½' : '') + '☆'.repeat(emptyStars);
+}
+
+/**
+ * Returns the fill percentage (0–100) of each of the five stars for a rating.
+ *
+ * Fractions fill a star proportionally (e.g. 3.5 → `[100, 100, 100, 50, 0]`).
+ * Ratings are clamped to 0–5 so the result always has five entries.
+ */
+export function getStarFills(rating: number): number[] {
+    const clamped = clampRating(rating);
+
+    return Array.from({ length: 5 }, (_, index) =>
+        Math.round(Math.min(1, Math.max(0, clamped - index)) * 100),
+    );
 }

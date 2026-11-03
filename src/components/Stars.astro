@@ -1,0 +1,24 @@
+---
+import { clampRating, getStarFills } from '../lib/ratings';
+
+interface Props {
+    rating: number;
+}
+
+const { rating } = Astro.props;
+const fills = getStarFills(rating);
+---
+
+<span
+    class="inline-flex"
+    role="img"
+    aria-label={`Rated ${clampRating(rating).toFixed(1)} out of 5`}
+    data-testid="star-icons"
+>
+    {fills.map((fill) => (
+        <span class="relative inline-block text-slate-600" aria-hidden="true" data-testid="star" data-fill={fill}>
+            ★
+            <span class="absolute inset-y-0 left-0 overflow-hidden text-yellow-400" style={`width: ${fill}%`}>★</span>
+        </span>
+    ))}
+</span>
