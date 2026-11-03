@@ -114,6 +114,11 @@ describe('games data-access helpers', () => {
             expect(await getFilteredGames(db, { categoryIds: [ids.catB], publisherId: ids.pubY })).toEqual([]);
         });
 
+        it('returns no games for ids that do not exist', async () => {
+            expect(await getFilteredGames(db, { categoryIds: [9999] })).toEqual([]);
+            expect(await getFilteredGames(db, { publisherId: 9999 })).toEqual([]);
+        });
+
         it('lists categories and publishers ordered by name', async () => {
             expect((await getAllCategories(db)).map((c) => c.name)).toEqual(['Action', 'Puzzle']);
             expect((await getAllPublishers(db)).map((p) => p.name)).toEqual(['Alpha', 'Zeta']);
