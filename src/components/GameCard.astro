@@ -1,6 +1,7 @@
 ---
 import type { Game } from '../types/game';
 import Tag from './Tag.astro';
+import Stars from './Stars.astro';
 import ArrowRight from '../assets/icons/arrow-right.svg';
 
 interface Props {
@@ -36,6 +37,10 @@ const { game } = Astro.props;
                     )}
                 </div>
             )}
+
+            <p class="text-yellow-400 mb-2 text-sm font-medium" data-testid="game-rating">
+                {game.starRating === null ? 'Not yet rated' : <Stars rating={game.starRating} />}
+            </p>
 
             <p class="text-slate-400 mb-4 text-sm line-clamp-2" data-testid="game-description">{game.description}</p>
 
