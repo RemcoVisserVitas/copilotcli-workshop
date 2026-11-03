@@ -69,6 +69,48 @@ test.describe('Game Filtering', () => {
     await expect(page.getByTestId('filter-publisher')).toHaveValue('');
   });
 
+  test('should announce the filtered result count in the status region', async ({ page }) => {
+    const total = await page.getByTestId('game-card').count();
+    await page.locator('[data-testid^="filter-category-"]').first().check();
+    const visible = await page.locator('[data-testid="game-card"]:visible').count();
+
+    const count = page.getByTestId('filter-result-count');
+    await expect(count).toHaveText(`Showing ${visible} of ${total} games`);
+    await expect(count).toHaveAttribute('role', 'status');
+    await expect(count).toHaveAttribute('aria-live', 'polite');
+  });
+
+  test('should show an empty state when no games match', async ({ page }) => {
+    await test.step('Make every card mismatch the next publisher filter', async () => {
+      // No category/publisher pair in the seed data is empty, so force a non-matching publisher id.
+      await page.getByTestId('game-card').evaluateAll((cards) => {
+        for (const card of cards) (card as HTMLElement).dataset.publisherId = '0';
+      });
+      await page.getByTestId('filter-publisher').selectOption({ index: 1 });
+    });
+
+    await test.step('Verify the empty state replaces the grid', async () => {
+      await expect(page.getByTestId('no-matching-games')).toBeVisible();
+      await expect(page.getByTestId('no-matching-games')).toContainText('No games match the selected filters.');
+      await expect(page.getByTestId('games-grid')).toBeHidden();
+      await expect(page.getByTestId('filter-result-count')).toContainText('Showing 0 of');
+    });
+
+    await test.step('Clearing filters brings the games back', async () => {
+      await page.getByTestId('filter-clear').click();
+      await expect(page.getByTestId('no-matching-games')).toBeHidden();
+      await expect(page.getByTestId('games-grid')).toBeVisible();
+    });
+  });
+
+  test('should ignore invalid filter values in the URL', async ({ page }) => {
+    const total = await page.getByTestId('game-card').count();
+    await page.goto('/?category=999&publisher=abc');
+    await expect(page.getByTestId('filter-publisher')).toHaveValue('');
+    await expect(page.locator('input[name="category"]:checked')).toHaveCount(0);
+    await expect(page.getByTestId('filter-result-count')).toHaveText(`Showing ${total} of ${total} games`);
+  });
+
   test('should be operable with the keyboard and restore state from the URL', async ({ page }) => {
     const checkbox = page.locator('[data-testid^="filter-category-"]').first();
     await checkbox.focus();
